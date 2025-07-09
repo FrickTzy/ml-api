@@ -3,3 +3,4 @@ gunicorn
 numpy
 scikit-learn
 flask_cors
+tensorflow

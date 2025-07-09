@@ -1,12 +1,15 @@
 from flask_cors import CORS
 from flask import Flask, jsonify, request, Response
-from config import CLASSIFICATION, DEFAULT_REGRESSION, DEFAULT_CLASSIFICATION
-from model import init_models, get_model, get_all_models, get_models_via_type
+from config import CLASSIFICATION, DEFAULT_REGRESSION, DEFAULT_CLASSIFICATION, models_folder
+from model import ModelManager
 import numpy as np
 
 app = Flask(__name__)
 CORS(app)
-init_models()
+
+model_manager = ModelManager(models_folder)
+model_manager.init_models()
+
 
 MODEL_TYPE = "modelType"
 MODEL_NAME = "modelName"
@@ -26,7 +29,7 @@ def predict() -> tuple[Response, int] | Response:
         DEFAULT_CLASSIFICATION if model_type == CLASSIFICATION else DEFAULT_REGRESSION
     )
 
-    model = get_model(model_name, model_type)
+    model = model_manager.get_model(model_name, model_type)
 
     input_array = request.get_json()
     if not isinstance(input_array, list):
@@ -48,7 +51,7 @@ def predict() -> tuple[Response, int] | Response:
 @app.route("/models", methods=["GET"])
 def get_models():
     model_type = request.args.get(MODEL_TYPE, None)
-    response = get_all_models() if model_type is None else get_models_via_type(model_type)
+    response = model_manager.get_all_models() if model_type is None else model_manager.get_models_via_type(model_type)
 
     return jsonify(response)
 
