@@ -8,7 +8,7 @@ class Model(Protocol):
     def score(self, input_array: np.ndarray, output_array: np.ndarray) -> float:
         pass
 
-    def predict(self, input_array: np.ndarray) -> np.ndarray:
+    def predict(self, input_array: np.ndarray | list) -> np.ndarray:
         pass
 
     def fit(self, input_array: np.ndarray, output_array: np.ndarray) -> None:
