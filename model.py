@@ -23,7 +23,7 @@ class ModelWrapper:
 
     def predict(self, input_array: np.ndarray) -> np.ndarray:
         if self.model_type == "keras":
-            # keras.models.Sequential returns probabilities for classification
+            input_array = input_array.reshape(28, 28, 1)
             probs = self.model.predict(input_array)
             if probs.ndim > 1 and probs.shape[0] == 1:
                 probs = probs[0]
