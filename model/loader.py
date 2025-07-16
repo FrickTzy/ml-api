@@ -28,7 +28,4 @@ class TFLoader(Loader):
 
 class TFLiteLoader(Loader):
     def load_model(self, model_path: Path) -> BaseModel:
-        interpreter = tf.lite.Interpreter(str(model_path))
-        interpreter.allocate_tensors()
-
-        return ModelInterpreter(interpreter)
+        return ModelInterpreter(model_path)

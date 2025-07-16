@@ -12,34 +12,46 @@ TFLITE_SUFFIX = ".tflite"
 PRIORITY_MODELS = {"Neural Network", "SVC"}
 
 
+digit_detection_models: Dict[str, Type[ModelWrapper]] = {
+    PICKLE_SUFFIX: SKLearnModel,
+    KERAS_SUFFIX: TFModel,
+    TFLITE_SUFFIX: TFLiteModel,
+}
+
+projects_to_models: Dict[str, Dict[str, Type[ModelWrapper]]] = {
+    config.DIGIT_DETECTION: digit_detection_models,
+    config.ANIME_RECOMMENDATION: digit_detection_models,
+}
+
+loaders: Dict[str, Type[Loader]] = {
+    PICKLE_SUFFIX: SKLearnLoader,
+    KERAS_SUFFIX: TFLoader,
+    TFLITE_SUFFIX: TFLiteLoader,
+}
+
+
 class ModelManager:
     def __init__(self, models_folder: str):
         self.path = Path(models_folder)
         self.models: Dict[str, Dict[str, ModelWrapper]] = defaultdict(dict)
-        self.loaders: Dict[str, Type[Loader]] = {
-            PICKLE_SUFFIX: SKLearnLoader,
-            KERAS_SUFFIX: TFLoader,
-            TFLITE_SUFFIX: TFLiteLoader,
-        }
-        self.model_wrapper: Dict[str, Type[ModelWrapper]] = {
-            PICKLE_SUFFIX: SKLearnModel,
-            KERAS_SUFFIX: TFModel,
-            TFLITE_SUFFIX: TFLiteModel,
-        }
 
     def init_models(self) -> None:
         for project_path in self.path.iterdir():
             if not project_path.is_dir():
                 continue
-            current_dict = self.models[project_path.name]
+            project_name = project_path.name
+            current_project = self.models[project_name]
+            models = projects_to_models[project_name]
             for model_file in project_path.iterdir():
-                for suffix, loader in self.loaders.items():
-                    if model_file.name.endswith(suffix):
-                        model_name = model_file.name.removesuffix(suffix)
-                        loaded_model = loader().load_model(model_file)
-                        wrapped_model = self.model_wrapper[suffix](loaded_model)
-                        current_dict[model_name] = wrapped_model
-                        break
+                for suffix, loader in loaders.items():
+                    if not model_file.name.endswith(suffix):
+                        continue
+
+                    model_name = model_file.name.removesuffix(suffix)
+                    loaded_model = loader().load_model(model_file)
+                    wrapped_model = models[suffix](loaded_model)
+                    current_project[model_name] = wrapped_model
+                    break
 
     def get_model(self, model_name: str, project_name: str) -> ModelWrapper:
         return self.models[project_name][model_name]

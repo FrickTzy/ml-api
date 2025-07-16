@@ -33,10 +33,7 @@ class TFLiteModel(ModelWrapper):
         input_array = input_array.astype(np.float32)
         input_array = input_array.reshape(1, 28, 28, 1)
 
-        self.model.interpreter.set_tensor(self.model.input[0]['index'], input_array)
-        self.model.interpreter.invoke()
-
-        probabilities = self.model.interpreter.get_tensor(self.model.output[0]['index'])
+        probabilities = self.model.predict(input_array)
 
         predicted_class = np.argmax(probabilities)
         return np.array([predicted_class])
