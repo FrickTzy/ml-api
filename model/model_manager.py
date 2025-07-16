@@ -9,6 +9,8 @@ PICKLE_SUFFIX = ".pkl"
 KERAS_SUFFIX = ".keras"
 TFLITE_SUFFIX = ".tflite"
 
+PRIORITY_MODELS = {"Neural Network", "SVC"}
+
 
 class ModelManager:
     def __init__(self, models_folder: str):
@@ -26,11 +28,11 @@ class ModelManager:
         }
 
     def init_models(self) -> None:
-        for model_type_dir in self.path.iterdir():
-            if not model_type_dir.is_dir():
+        for project_path in self.path.iterdir():
+            if not project_path.is_dir():
                 continue
-            current_dict = self.models[model_type_dir.name]
-            for model_file in model_type_dir.iterdir():
+            current_dict = self.models[project_path.name]
+            for model_file in project_path.iterdir():
                 for suffix, loader in self.loaders.items():
                     if model_file.name.endswith(suffix):
                         model_name = model_file.name.removesuffix(suffix)
@@ -39,14 +41,22 @@ class ModelManager:
                         current_dict[model_name] = wrapped_model
                         break
 
-    def get_model(self, model_name: str, model_type: str) -> ModelWrapper:
-        return self.models[model_type][model_name]
+    def get_model(self, model_name: str, project_name: str) -> ModelWrapper:
+        return self.models[project_name][model_name]
 
-    def get_models_via_type(self, model_type: str) -> list[str]:
-        return list(self.models[model_type].keys())
+    def get_project_models(self, project_name: str) -> list[str]:
+        models = list(self.models[project_name].keys())
+
+        # prioritize priority models, so it's at the start of the list
+        models = sorted(models, key=lambda x: 0 if x in PRIORITY_MODELS else 1)
+
+        return models
 
     def get_all_models(self) -> dict[str, list[str]]:
-        return {model_type: list(models.keys()) for model_type, models in self.models.items()}
+        return {project_name: list(models.keys()) for project_name, models in self.models.items()}
+
+    def get_projects(self) -> list[str]:
+        return list(self.models.keys())
 
 
 if __name__ == '__main__':

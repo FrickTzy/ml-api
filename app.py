@@ -1,6 +1,6 @@
 from flask_cors import CORS
 from flask import Flask, jsonify, request, Response
-from config import CLASSIFICATION, DEFAULT_REGRESSION, DEFAULT_CLASSIFICATION, models_folder
+from config import models_folder
 from model import ModelManager
 import numpy as np
 
@@ -9,27 +9,27 @@ CORS(app)
 
 model_manager = ModelManager(models_folder)
 model_manager.init_models()
+projects = model_manager.get_projects()
 
-
-MODEL_TYPE = "modelType"
+PROJECT_NAME = "projectName"
 MODEL_NAME = "modelName"
 
 
 @app.route("/")
 def home() -> Response:
-    return jsonify({"API Routes": ["/predict", "/get_models"], "ARGS": [MODEL_TYPE, MODEL_NAME],
-                    "JSON": "Used for data input."})
+    return jsonify({"API Routes": ["/predict", "/get_models"], "ARGS": [PROJECT_NAME, MODEL_NAME],
+                    "JSON": "Used for data input.", "Projects": projects})
 
 
 @app.route("/predict", methods=["POST"])
 def predict() -> tuple[Response, int] | Response:
-    model_type = request.args.get(MODEL_TYPE, CLASSIFICATION)
-    model_name = request.args.get(
-        MODEL_NAME,
-        DEFAULT_CLASSIFICATION if model_type == CLASSIFICATION else DEFAULT_REGRESSION
-    )
+    project_name = request.args.get(PROJECT_NAME, None)
+    model_name = request.args.get(MODEL_NAME, None)
 
-    model = model_manager.get_model(model_name, model_type)
+    if project_name is None or model_name is None:
+        return jsonify({"success": False, "error": "Incomplete argument."}), 400
+
+    model = model_manager.get_model(model_name, project_name)
 
     input_array = request.get_json()
     if not isinstance(input_array, list):
@@ -42,7 +42,7 @@ def predict() -> tuple[Response, int] | Response:
 
     return jsonify({
         "success": True,
-        "type": model_type,
+        "project_name": project_name,
         "model": model_name,
         "prediction": prediction
     })
@@ -50,8 +50,8 @@ def predict() -> tuple[Response, int] | Response:
 
 @app.route("/models", methods=["GET"])
 def get_models():
-    model_type = request.args.get(MODEL_TYPE, None)
-    response = model_manager.get_all_models() if model_type is None else model_manager.get_models_via_type(model_type)
+    project_name = request.args.get(PROJECT_NAME, None)
+    response = model_manager.get_all_models() if project_name is None else model_manager.get_project_models(project_name)
 
     return jsonify(response)
 

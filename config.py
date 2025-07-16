@@ -1,5 +1,5 @@
 REGRESSION = "regression"
-CLASSIFICATION = "classification"
+CLASSIFICATION = "digit_detection"
 
 DEFAULT_REGRESSION = "LinearRegression"
 DEFAULT_CLASSIFICATION = "SVC"
