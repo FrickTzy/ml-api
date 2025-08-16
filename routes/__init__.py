@@ -1,0 +1,5 @@
+from .get_models.get_model import model_blueprint
+from .digit_detection.digit_detection import digit_detection_blueprint
+from .anime_recommendation.anime_recommendation import anime_recommendation_blueprint
+
+blueprints = [model_blueprint, digit_detection_blueprint, anime_recommendation_blueprint]

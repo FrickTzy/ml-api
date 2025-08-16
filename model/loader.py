@@ -1,12 +1,10 @@
 from pathlib import Path
 import pickle
 from tensorflow import keras
-import tensorflow as tf
 from abc import ABC, abstractmethod
 from interface import BaseModel, ModelInterpreter
-
-PICKLE_SUFFIX = ".pkl"
-KERAS_SUFFIX = ".keras"
+from typing import Dict, Type
+from .suffix import PICKLE_SUFFIX, KERAS_SUFFIX, TFLITE_SUFFIX
 
 
 class Loader(ABC):
@@ -29,3 +27,10 @@ class TFLoader(Loader):
 class TFLiteLoader(Loader):
     def load_model(self, model_path: Path) -> BaseModel:
         return ModelInterpreter(model_path)
+
+
+loaders: Dict[str, Type[Loader]] = {
+    PICKLE_SUFFIX: SKLearnLoader,
+    KERAS_SUFFIX: TFLoader,
+    TFLITE_SUFFIX: TFLiteLoader,
+}

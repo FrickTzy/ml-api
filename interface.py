@@ -23,6 +23,11 @@ class ModelInterpreter:
         return probabilities
 
 
+class NeighborModel(Protocol):
+    def kneighbors(self, input_array: np.ndarray | list, n_neighbors: int) -> np.ndarray:
+        ...
+
+
 class Model(Protocol):
     def score(self, input_array: np.ndarray, output_array: np.ndarray) -> float:
         pass
@@ -34,4 +39,4 @@ class Model(Protocol):
         pass
 
 
-BaseModel = Union[BaseEstimator, Model, ModelInterpreter]
+BaseModel = Union[BaseEstimator, Model, ModelInterpreter, NeighborModel]
